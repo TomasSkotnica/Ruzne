@@ -10,7 +10,7 @@
             "type": "PowerShell",
             "request": "launch",
             "script": "${file}",
-            "args": ["c:\\Users\\t\\Documents\\CV\\doc2txt\\AS", "c:\\temp\\doc2txt\\dest\\"]
+            "args": ["c:\\Users\\t\\Documents\\CV\\doc2txt\\AS c:\\temp\\doc2txt\\dest\\ -From 2025-11-01 -To 2025-11-30"]
         }
     ]
 }

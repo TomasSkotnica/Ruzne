@@ -9,17 +9,20 @@ param(
     [Nullable[DateTime]]$To   = $null
 )
 
-#.\Convert-DocxToTxt.ps1 "c:\Users\t\Documents\CV\doc2txt\AS" "c:\temp\doc2txt\dest\" -From "2025-10-01" -To "2024-06-30"
+#.\Convert-Docx2Txt.ps1 "c:\Users\t\Documents\CV\doc2txt\AS" "c:\temp\doc2txt\dest\" -From "2025-11-05" -To "2025-11-30"
 
-if ($null -ne $From -and $null -ne $To -and $From -lt $To) {
-    exit
+Write-Host "Start"
+
+if ($null -ne $From -and $null -ne $To -and $From -gt $To) {
+    Write-Host "Done.exit"
 }
 
 if (!(Test-Path $OutputFolder)) {
     New-Item -ItemType Directory -Path $OutputFolder -Force | Out-Null
 }
 
-$logFile = Join-Path $OutputFolder "conversion_log.csv"
+$logFileName = "conversion_log.txt"
+$logFile = Join-Path $OutputFolder $logFileName
 if (!(Test-Path $logFile)) {
     "Timestamp,Status,SourceFile,OutputFile,Message" | Out-File $logFile -Encoding UTF8
 }
@@ -41,7 +44,7 @@ foreach ($file in $files) {
     $destPath = Join-Path $OutputFolder $relativeTextPath
     $destDir = Split-Path $destPath
     if (!(Test-Path $destDir)) {
-        #New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
     }
 
     Write-Host "Converting: $($file.FullName)"
@@ -50,7 +53,7 @@ foreach ($file in $files) {
     try {
         $doc = $word.Documents.Open($file.FullName)
         # 2 = wdFormatText
-        #$doc.SaveAs([ref]$destPath, [ref]2)
+        $doc.SaveAs([ref]$destPath, [ref]2)
         $doc.Close()
         "Success,$($file.FullName),$destPath,OK" | Out-File $logFile -Append -Encoding UTF8
         }
