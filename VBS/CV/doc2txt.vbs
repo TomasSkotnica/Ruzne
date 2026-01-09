@@ -1,4 +1,4 @@
-' cscript doc2txt.vbs c:\Users\t\Documents\CV\doc2txt\AS\ c:\temp\doc2txt\dest\
+' cscript doc2txt.vbs c:\Users\t\Documents\CV\doc2txt\AS\ c:\temp\doc2txt\dest2\
 If WScript.Arguments.Count < 2 Then
   WScript.Echo "Usage: " + WScript.ScriptName + " <source folder> <destination folder>"
   WScript.Quit 1
@@ -33,6 +33,8 @@ if Right(destRoot, 1) <> "\" Then destRoot = destRoot & "\"
 WScript.Echo "po uprave: " & destRoot
 
 Set logf = fso.OpenTextFile(destRoot & "test.txt", 8, True)
+logf.WriteLine ""
+logf.WriteLine "Script started at " & Now
 
 Set objWord = CreateObject("Word.Application")
 Call ListDocxFiles(sourceFolder)
@@ -40,6 +42,9 @@ Call ListDocxFiles(sourceFolder)
 WScript.Echo "ListDocxFiles ended"
 WScript.Echo "Quiting Word"
 objWord.Quit
+
+logf.WriteLine "Script ended at " & Now
+logf.WriteLine ""
 logf.Close
 ' end of main
 
@@ -57,7 +62,7 @@ Sub ListDocxFiles(folderPath)
             'WScript.Echo destFolder
             If Not fso.FolderExists(destFolder) Then
                 'WScript.Echo "Creating: " & destFolder
-                fso.CreateFolder(destFolder)
+                Call CreateFolder(destRoot, relat)
             End If
 
             strNewName = destFolder & Left(file.Name, Len(file.Name) - 4) & "txt"
@@ -91,3 +96,21 @@ Sub ListDocxFiles(folderPath)
     Next
 End Sub
 
+'''''''''''''''''''''''''''''''''
+Sub CreateFolder(where, what)
+    WScript.Echo where
+    Dim arr
+    arr = Split(what, "\")
+    subCounter = ""
+    Dim i
+    For i = 0 To UBound(arr)
+        WScript.Echo arr(i)
+        if arr(i) <> "" Then 
+            subCounter = subCounter & arr(i) & "\"
+            WScript.Echo subCounter
+            If Not fso.FolderExists(where & subCounter) Then
+                fso.CreateFolder(where & subCounter)
+            End If
+        End If
+    Next
+End Sub
