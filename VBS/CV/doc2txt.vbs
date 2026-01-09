@@ -32,24 +32,31 @@ sourceFolderLength = Len(sourceFolderObject.Path)
 if Right(destRoot, 1) <> "\" Then destRoot = destRoot & "\"
 WScript.Echo "po uprave: " & destRoot
 
+Set logf = fso.OpenTextFile(destRoot & "test.txt", 8, True)
+
 Set objWord = CreateObject("Word.Application")
 Call ListDocxFiles(sourceFolder)
+
 WScript.Echo "ListDocxFiles ended"
 WScript.Echo "Quiting Word"
 objWord.Quit
+logf.Close
+' end of main
 
+''''''''''''''''''''''''''''''''''''
 Sub ListDocxFiles(folderPath)
     Dim folder, subfolder, file
     Set folder = fso.GetFolder(folderPath)
 
     For Each file in folder.Files
         If LCase(fso.GetExtensionName(file.Name)) = "docx" Then
+            Wscript.Echo
             WScript.Echo file.Path
             relat  = Right(folder.Path, Len(folder.Path) - sourceFolderLength)
             destFolder = destRoot & relat & "\"
-            WScript.Echo destFolder
+            'WScript.Echo destFolder
             If Not fso.FolderExists(destFolder) Then
-                WScript.Echo "Creating: " & destFolder
+                'WScript.Echo "Creating: " & destFolder
                 fso.CreateFolder(destFolder)
             End If
 
@@ -67,9 +74,15 @@ Sub ListDocxFiles(folderPath)
                 Err.Clear() ' Clear Err object fields.
             End If            
             objDoc.SaveAs strNewName, 2
-            WScript.Echo "Press any key to continue ..."
-            WScript.StdIn.ReadLine
+'            WScript.Echo "Press any key to continue ..." : WScript.StdIn.ReadLine
             objDoc.Close
+
+            If fso.FileExists(strNewName) Then
+                logf.WriteLine strNewName & " OK"
+            Else
+                logf.WriteLine strNewName & " failed"
+            End If
+
         End If
     Next
 
