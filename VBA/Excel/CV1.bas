@@ -142,7 +142,6 @@ End Function
 
 Sub PopulatePosts1()
     Dim wsPosts As Worksheet
-    'wsPosts = Worksheets("Posts") 'ThisWorkbook.
     Worksheets("Posts").range("A1:E1").Value = Array("Company", "Date", "Branch", "Folder", "Origin")
     
     Dim level1 As Object
@@ -159,37 +158,37 @@ Sub PopulatePosts1()
         
         Worksheets("Files").range("$A$1:$H$11").AutoFilter Field:=4, Criteria1:=branch
         
-        Dim lastBranchRow
-        lastBranchRow = Worksheets("Files").Cells(Rows.Count, 1).End(xlUp).Row
-        For Each oneRow In Worksheets("Files").range("$A$2:$A$" & lastBranchRow).SpecialCells(xlCellTypeVisible)
+        For Each oneRow In Worksheets("Files").range("$A$2:$A$" & lastRow).SpecialCells(xlCellTypeVisible)
             'Debug.Print oneRow.range("A1")
         Next oneRow
         
-        Worksheets("Files").range("$A$1:$H$11").AutoFilter Field:=7, Criteria1:="Microsoft Edge PDF Document"
+        Worksheets("Files").range("$A$1:$H$" & lastRow).AutoFilter Field:=7, Criteria1:="Microsoft Edge PDF Document"
         
         Dim pdfCount
         pdfCount = 0
-        Dim lastPdfRow
-        lastPdfRow = Worksheets("Files").Cells(Rows.Count, 1).End(xlUp).Row
-        For Each oneRow In Worksheets("Files").range("$A$2:$A$" & lastPdfRow).SpecialCells(xlCellTypeVisible)
+        Dim selectedRowNrs As New Collection
+        
+        For Each oneRow In Worksheets("Files").range("$A$2:$A$" & lastRow).SpecialCells(xlCellTypeVisible)
             Debug.Print oneRow.range("A1")
             pdfCount = pdfCount + 1
+            selectedRowNrs.Add (oneRow.Row)
         Next oneRow
         
         If pdfCount = 1 Then
-            For Each oneRow In Worksheets("Files").range("$A$13:$H13").SpecialCells(xlCellTypeVisible)
+            For Each oneRow In Worksheets("Files").range("$A$2:$H" & lastRow).SpecialCells(xlCellTypeVisible)
                 nextRow = Worksheets("Posts").Cells(Worksheets("Posts").Rows.Count, 1).End(xlUp).Row + 1
                 Worksheets("Posts").Cells(nextRow, 1).Value = oneRow.range("A1")
-                Worksheets("Posts").Cells(nextRow, 2).Value = oneRow.range("A3")
-                Worksheets("Posts").Cells(nextRow, 3).Value = oneRow.range("A4")
-                Worksheets("Posts").Cells(nextRow, 4).Value = oneRow.range("A5")
+                Worksheets("Posts").Cells(nextRow, 2).Value = oneRow.range("C1")
+                Worksheets("Posts").Cells(nextRow, 3).Value = oneRow.range("D1")
+                Worksheets("Posts").Cells(nextRow, 4).Value = oneRow.range("E1")
                 Worksheets("Posts").Cells(nextRow, 5).Value = "company's original pdf"
+                Exit For
             Next oneRow
         End If
 
+        ' selectedRowNrs must be emptied now by loop, there is no RemoveAll method
         
         Worksheets("Files").ShowAllData
-'        Worksheets("Files").range("E2:E11").AdvancedFilter _'            Action:=xlFilterCopy, CopyToRange:=Worksheets("work").range("A1"), CriteriaRange:=range("Criteria")
     Next branch
 
 End Sub
