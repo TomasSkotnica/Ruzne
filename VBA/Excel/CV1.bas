@@ -141,8 +141,10 @@ Function GetDistinct(ws As String, sourceRange As String) As Object
 End Function
 
 Sub PopulatePosts1()
+    Worksheets("Files").range("$A$1:$H$11").AutoFilter ' cancel previous filters
+    
     Dim wsPosts As Worksheet
-    Worksheets("Posts").range("A1:E1").Value = Array("Company", "Date", "Branch", "Folder", "Origin")
+    Worksheets("Posts").range("A1:G1").Value = Array("Date", "Branch", "Company", "FileName", "Origin", "Folder", "FileId")
     
     Dim level1 As Object
 
@@ -159,7 +161,7 @@ Sub PopulatePosts1()
         Worksheets("Files").range("$A$1:$H$11").AutoFilter Field:=4, Criteria1:=branch
         
         For Each oneRow In Worksheets("Files").range("$A$2:$A$" & lastRow).SpecialCells(xlCellTypeVisible)
-            'Debug.Print oneRow.range("A1")
+            Debug.Print oneRow.range("A1")
         Next oneRow
         
         Worksheets("Files").range("$A$1:$H$" & lastRow).AutoFilter Field:=7, Criteria1:="Microsoft Edge PDF Document"
@@ -177,18 +179,50 @@ Sub PopulatePosts1()
         If pdfCount = 1 Then
             For Each oneRow In Worksheets("Files").range("$A$2:$H" & lastRow).SpecialCells(xlCellTypeVisible)
                 nextRow = Worksheets("Posts").Cells(Worksheets("Posts").Rows.Count, 1).End(xlUp).Row + 1
-                Worksheets("Posts").Cells(nextRow, 1).Value = oneRow.range("A1")
-                Worksheets("Posts").Cells(nextRow, 2).Value = oneRow.range("C1")
-                Worksheets("Posts").Cells(nextRow, 3).Value = oneRow.range("D1")
-                Worksheets("Posts").Cells(nextRow, 4).Value = oneRow.range("E1")
-                Worksheets("Posts").Cells(nextRow, 5).Value = "company's original pdf"
+                Worksheets("Posts").Cells(nextRow, 1).Value = oneRow.range("C1")
+                Worksheets("Posts").Cells(nextRow, 1).NumberFormat = "yyyy-mm-dd"
+                Worksheets("Posts").Cells(nextRow, 2).Value = oneRow.range("D1")
+                Worksheets("Posts").Cells(nextRow, 3).Value = oneRow.range("E1")
+                Worksheets("Posts").Cells(nextRow, 4).Value = oneRow.range("A1")
+                Worksheets("Posts").Cells(nextRow, 5).Value = "not reused"
+                Worksheets("Posts").Cells(nextRow, 6).Value = oneRow.range("F1")
+                Worksheets("Posts").Cells(nextRow, 7).Value = oneRow.range("F1").Row
                 Exit For
             Next oneRow
         End If
 
-        ' selectedRowNrs must be emptied now by loop, there is no RemoveAll method
+'Array("Date", "Branch", "Company", "FileName", "Origin", "Folder", "FileId")
+
+        Dim rowNumber
+        If pdfCount > 1 Then
+            For Each rowNumber In selectedRowNrs ' oneRow In Worksheets("Files").Range("$A$2:$H" & lastRow).SpecialCells(xlCellTypeVisible)
+                oneRow = Worksheets("Files").range("$A$" & rowNumber & ":$H" & rowNumber).SpecialCells(xlCellTypeVisible)
+                Dim fileName, restOfName, companyName As String
+                fileName = Worksheets("Files").Cells(rowNumber, 1) 'oneRow.Range("A" & rowNumber)
+                restOfName = Replace(fileName, "Tomáš Skotnica CV", "")
+                companyName = Trim(Left(restOfName, Len(restOfName) - 4))
+                If restOfName <> "" Then
+                    nextRow = Worksheets("Posts").Cells(Worksheets("Posts").Rows.Count, 1).End(xlUp).Row + 1
+                    Worksheets("Posts").Cells(nextRow, 1).Value = Worksheets("Files").Cells(rowNumber, 3)
+                    Worksheets("Posts").Cells(nextRow, 1).NumberFormat = "yyyy-mm-dd"
+                    Worksheets("Posts").Cells(nextRow, 2).Value = Worksheets("Files").Cells(rowNumber, 4)
+                    Worksheets("Posts").Cells(nextRow, 3).Value = companyName
+                    Worksheets("Posts").Cells(nextRow, 4).Value = Worksheets("Files").Cells(rowNumber, 1)
+                    Worksheets("Posts").Cells(nextRow, 5).Value = "company's original pdf"
+                    Worksheets("Posts").Cells(nextRow, 6).Value = Worksheets("Files").Cells(rowNumber, 6)
+                    Worksheets("Posts").Cells(nextRow, 7).Value = rowNumber
+                End If
+            Next rowNumber
+        End If
         
-        Worksheets("Files").ShowAllData
+        ' selectedRowNrs must be emptied now by loop, there is no RemoveAll method
+        For rowNumber = 1 To selectedRowNrs.Count
+            selectedRowNrs.Remove 1    ' Remove the first object each time
+            ' through the loop until there are
+            ' no objects left in the collection.
+        Next rowNumber
+        
+        Worksheets("Files").ShowAllData ' cancel previous filters
     Next branch
 
 End Sub
@@ -213,3 +247,16 @@ Next r
 ws.AutoFilterMode = False
 
 End Sub
+
+Sub ResetFilters()
+    Dim lastRow As Long
+    lastRow = Worksheets("Files").Cells(Rows.Count, "A").End(xlUp).Row
+    Worksheets("Files").range("$A$1:$H$11").AutoFilter ' no parameters clears all filters, shows all rows
+    Worksheets("Files").range("$A$1:$H$" & lastRow).AutoFilter Field:=7, Criteria1:="Text Document"
+End Sub
+
+Sub WriteA3()
+    ' Writes value to cell A3 even it is not visible when filter is applied
+    Cells(3, 1) = "A3"
+End Sub
+
